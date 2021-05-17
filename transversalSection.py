@@ -47,15 +47,19 @@ class Calculator:
         self.Nx = Nx
         self.My = My
         self.Mz = Mz
-        self.yLimits = [max(self.transversalSection.yVector), min(self.transversalSection.yVector)]
-        self.zLimits = [max(self.transversalSection.zVector), min(self.transversalSection.zVector)]
 
-    
-
+    def getNormalStress(self):
+        yp = [self.transversalSection.yVector[i] - self.transversalSection.yc for i in range(0, len(self.transversalSection.yVector))]
+        zp = [self.transversalSection.zVector[i] - self.transversalSection.zc for i in range(0, len(self.transversalSection.zVector))]
+        normalStressVector = [round((self.Nx/self.transversalSection.area - (self.transversalSection.iy*self.Mz + self.transversalSection.iyz*self.My)/(self.transversalSection.iz*self.transversalSection.iy - self.transversalSection.iyz**2)*yp[i])+(self.transversalSection.iz*self.My + self.transversalSection.iyz*self.Mz)/(self.transversalSection.iz*self.transversalSection.iy - self.transversalSection.iyz**2)*zp[i], 4) for i in range(0, len(zp))]
+        return normalStressVector
 
 # Teste
 section = TransversalSection(
     yVector=[0, 10, 10, 25, 25, 0, 0],
     zVector=[0, 0, 15, 15, 20, 20, 0]
 )
-section.returnAllParameters()
+strain = Calculator(section, 0, -2.1e5, 0)
+print('\n')
+print(strain.getNormalStress())
+#section.returnAllParameters()
