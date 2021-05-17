@@ -35,10 +35,11 @@ class TransversalSection:
         return round((sum(productMoment) - self.area*self.getZCentroid() * self.getYCentroid()), 4)
 
     def returnAllParameters(self):
-        print('\nÁrea = ' + str(self.area) + '\n')
-        print('Centroide: yc = ' + str(self.yc) + ', zc = ' + str(self.zc) + '\n')
-        print('Inércia: Iy = ' + str(self.iy) + ', Iz = ' + str(self.iz) + '\n')
-        print('Produto de inércia = ' + str(self.iyz))
+        print('\nParâmetros Geométricos -----------------\n')
+        print('\tÁrea = ' + str(self.area) + '\n')
+        print('\tCentroide: yc = ' + str(self.yc) + ', zc = ' + str(self.zc) + '\n')
+        print('\tInércia: Iy = ' + str(self.iy) + ', Iz = ' + str(self.iz) + '\n')
+        print('\tProduto de inércia = ' + str(self.iyz))
 
 class Calculator:
 
@@ -47,6 +48,7 @@ class Calculator:
         self.Nx = Nx
         self.My = My
         self.Mz = Mz
+        self.normalStress = self.getNormalStress()
 
     def getNormalStress(self):
         yp = [self.transversalSection.yVector[i] - self.transversalSection.yc for i in range(0, len(self.transversalSection.yVector))]
@@ -54,12 +56,45 @@ class Calculator:
         normalStressVector = [round((self.Nx/self.transversalSection.area - (self.transversalSection.iy*self.Mz + self.transversalSection.iyz*self.My)/(self.transversalSection.iz*self.transversalSection.iy - self.transversalSection.iyz**2)*yp[i])+(self.transversalSection.iz*self.My + self.transversalSection.iyz*self.Mz)/(self.transversalSection.iz*self.transversalSection.iy - self.transversalSection.iyz**2)*zp[i], 4) for i in range(0, len(zp))]
         return normalStressVector
 
-# Teste
+    def getMaxAndMinStress(self):
+        idMax = []
+        idMin = []
+        for i in range(0, len(self.normalStress)):
+            idMax.append(i) if self.normalStress[i] == max(self.normalStress) else None
+            idMin.append(i) if self.normalStress[i] == min(self.normalStress) else None
+        return (idMax, idMin)
+
+    def returnAllParameters(self):
+        idMax, idMin = self.getMaxAndMinStress()
+        print('\nTensão de Flexão Composta -----------------')
+
+        print('\n\tTensão Máxima:\n')
+        for i in idMax:
+            print('\t\tp(' + str(self.transversalSection.yVector[i]) + ', ' + str(self.transversalSection.zVector[i]) + ') = ' + str(self.normalStress[i]))
+
+        print('\n\tTensão Mínima:\n')
+        for i in idMin:
+            print('\t\tp(' + str(self.transversalSection.yVector[i]) + ', ' + str(
+                self.transversalSection.zVector[i]) + ') = ' + str(self.normalStress[i]))
+
+        print('\n\tTensões nos pontos:\n')
+        for i in range(len(self.normalStress)):
+            print('\t\tp(' + str(self.transversalSection.yVector[i]) + ', ' + str(self.transversalSection.zVector[i]) + ') = ' + str(self.normalStress[i]) + '\n')
+
+
+
+# Entrada de Dados
 section = TransversalSection(
     yVector=[0, 10, 10, 25, 25, 0, 0],
     zVector=[0, 0, 15, 15, 20, 20, 0]
 )
-strain = Calculator(section, 0, -2.1e5, 0)
-print('\n')
-print(strain.getNormalStress())
-#section.returnAllParameters()
+strain = Calculator(
+    TransversalSection=section,
+    Nx=0,
+    My=-2.1e5,
+    Mz=0
+)
+
+section.returnAllParameters()
+strain.returnAllParameters()
+
